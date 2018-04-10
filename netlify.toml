@@ -1,0 +1,5 @@
+[[redirects]]
+from = "/photos"
+to = "https://seanbarag.pixieset.com/all"
+status = 301
+force = false
