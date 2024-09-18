@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>I Want Process-Aware Types</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; } /* Alert */
+    code span.an { color: #008000; } /* Annotation */
+    code span.at { } /* Attribute */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #0000ff; } /* ControlFlow */
+    code span.ch { color: #008080; } /* Char */
+    code span.cn { } /* Constant */
+    code span.co { color: #008000; } /* Comment */
+    code span.cv { color: #008000; } /* CommentVar */
+    code span.do { color: #008000; } /* Documentation */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.im { } /* Import */
+    code span.in { color: #008000; } /* Information */
+    code span.kw { color: #0000ff; } /* Keyword */
+    code span.op { } /* Operator */
+    code span.ot { color: #ff4000; } /* Other */
+    code span.pp { color: #ff4000; } /* Preprocessor */
+    code span.sc { color: #008080; } /* SpecialChar */
+    code span.ss { color: #008080; } /* SpecialString */
+    code span.st { color: #008080; } /* String */
+    code span.va { } /* Variable */
+    code span.vs { color: #008080; } /* VerbatimString */
+    code span.wa { color: #008000; font-weight: bold; } /* Warning */
+  </style>
+  <style>
+  p, aside {
+    text-align: justify;
+  }
+  .right {
+    display: flex;
+    flex-direction: column;
+  }
+  aside {
+    align-self: flex-end;
+    max-width: 65%;
+    background-color: #eeeeee;
+    margin-block: 0.5rem;
+    margin-left: auto;
+    margin-right: -1.25rem;
+    padding-inline: 0.75rem 1.25rem;
+    padding-block: 0.5rem;
+    border-left: double black medium;
+  }
+  aside p:first-of-type {
+    margin-top: 0;
+  }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">I Want Process-Aware Types</h1>
+</header>
+<h1 data-number="1" id="tldr"><span
+class="header-section-number">1</span> tl;dr</h1>
+<p>I’ve always wanted a type system that would keep me from exposing
+sensitive data with minimal developer effort, so I took a crack at
+designing it for Go. It requires two new container types
+(<code>inproc[T]</code> and <code>xproc[T]</code>) and a global function
+that are all removed at compile-time, but results in a nearly zero-cost
+data privacy setup. Besides reflection-based checks, no runtime changes
+are required.</p>
+<p>This is somewhere between a thought experiment and a proper proposal
+for inclusion in a language. It’s certainly not ready for an RFC
+anywhere, but there’s perhaps a kernel of value here.</p>
+<div class="right">
+<aside>
+This was written in bursts between January and September 2024 before it
+was finally published. It’s not as polished as I’d like, but I’d rather
+publish something a bit messy than never publish.
+</aside>
+</div>
+<h1 data-number="2" id="background"><span
+class="header-section-number">2</span> Background</h1>
+<p>There’s a class of data in many applications that’s sensitive and/or
+secret, but must still be accessible in plain-text for the application
+to work. The space is unbounded so a few examples help:</p>
+<ul>
+<li>In a server application:
+<ul>
+<li>Users’ password hashes</li>
+<li>External system credentials (e.g. your database auth certificate or
+log/metrics sink tokens)</li>
+<li>The last four digits of a user’s credit card</li>
+<li>A user’s mailing address (as in an e-commerce environment)</li>
+</ul></li>
+<li>In a client application:
+<ul>
+<li>A user’s auth token after logging in</li>
+<li>Any personally-identifying information from a user (e.g. their
+billing address)</li>
+</ul></li>
+<li>In an offline-only CLI:
+<ul>
+<li>The passphrase used to decrypt a password manager’s vault</li>
+<li>A user’s SSH key passphrase</li>
+</ul></li>
+</ul>
+<p>In any scenario, this information is required for the application to
+function. Clearly, users can’t log in if we make password hashes
+unreadable on the server, and we can’t display a user’s shipping address
+if their addresses aren’t readable. Users can’t perform any actions
+after logging in if we make auth tokens unreadable on the client. And we
+can’t decrypt the user’s password store without accepting their
+passphrase.</p>
+<p>The trouble comes in with the handling of these values. It’s
+incredibly easy to include one in a log line that gets shipped off to a
+separate machine, where it’s indexed, replicated, and archived. Whether
+that machine is in your control or not is irrelevant: sensitive data has
+just leaked.</p>
+<div class="right">
+<aside>
+This isn’t limited to logging! Serializing objects for server response,
+producing crash reports, making requests to external systems, and even
+writing internal state files can all lead to this kind of exposure.
+</aside>
+</div>
+<p>Just how easy that is depends on the languages and frameworks
+involved, but <code>printf</code> debugging remains relevant because
+it’s so dang effective. And sometimes you just need to log values in
+production to see why a bug doesn’t reproduce in a pre-prod
+environment.</p>
+<aside>
+We’ll be talking about a lot of languages here, all of which have their
+own names for similar concepts. Structs in C and Go are roughly
+equivalent to Java classes, for example. Unless otherwise noted, I’ll be
+using Go’s names as a middle-ground.
+</aside>
+<p>For a contrived example, consider a user session object in Go:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> UserSession <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  Username <span class="dt">string</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  pwHash <span class="dt">string</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  expires time<span class="op">.</span>Time</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>By default, you’re one <code>fmt.(Sp|P)rintf("%v\n", session)</code>
+away from including a user’s password hash in your logs, writing it to a
+file, or returning it in a server response.</p>
+<p>Type systems as they exist today are unable to prevent this kind of
+bug. A <code>string</code> containing a user’s name is indistinguishable
+from the <code>string</code> containing their salted+hashed password at
+compile-time. While some tools and techniques exist to mitigate these
+issues, they’re at-best difficult to set up and at-worst (and most
+commonly) not attempted at all.</p>
+<p>Languages have recently taken to adding compile-time guarantees for
+concurrency-related bugs. Like the concurrency-awareness baked into Rust
+and Swift (among others), I’d argue there’s significant benefits to be
+realized if type systems were aware of process boundaries and could
+prevent values from being exfiltrated from processes.</p>
+<h1 data-number="3" id="why-is-this-needed-at-all"><span
+class="header-section-number">3</span> Why is this needed at all?</h1>
+<div class="right">
+<aside>
+If you’re already sold, feel free to skip ahead to <a
+href="#proposed-the-inproc-and-xproc-type-modifiers">the proposal</a>.
+</aside>
+</div>
+<p>First, a brief detour for justification.</p>
+<p>The “Internet commenter”-obvious solution is to tell developers to
+just… not do these kinds of things. Don’t log structures that contain
+sensitive values; don’t log values you don’t fully understand; don’t
+rely on <code>printf</code> debugging; don’t deploy code without reading
+through responses.</p>
+<p>And they’re right! Those are <em>of course</em> valid solutions. That
+same advice applies to other forms of safety that we as developers have
+come to rely on:</p>
+<ul>
+<li>Without being able to test before deploying, we remind each other
+“Just don’t forget to test manually”</li>
+<li>Without access modifiers, we warn “Just don’t read/write values
+prefixed with <code>_</code>”</li>
+<li>Without strongly-typed languages, we tell ourselves “Just don’t
+access properties without making type assertions”</li>
+<li>Without linters, we try to remember to “Just close that file
+descriptor before returning”</li>
+<li>Without ownership guarantees, we say “Just don’t modify that pointer
+if you don’t control it”</li>
+</ul>
+<p>At some point in time, developers have agreed that a subset of these
+“Just don’t (…)” techniques weren’t enough. We wrote tools to protect
+our users from our own forgetfulness and made those tools available by
+default in many cases. We’ve been able to spend our newfound attention
+on more complicated problems as a result.</p>
+<p>Protecting sensitive values — both “our” values and our users’ data —
+is due for this kind of tooling.</p>
+<h1 data-number="4" id="existing-techniques"><span
+class="header-section-number">4</span> Existing Techniques</h1>
+<div class="right">
+<aside>
+If you’re already sold, feel free to skip ahead to <a
+href="#proposed-the-inproc-and-xproc-type-modifiers">the proposal</a>.
+</aside>
+</div>
+<p>This is by no means an unsolvable problem using current techniques,
+but each of those have at least one significant drawback.</p>
+<p>I recognize that I’m likely missing some approaches here. <a
+href="#contact">Please let me know</a>.</p>
+<h2 data-number="4.1" id="access-modifiers-design-around-it"><span
+class="header-section-number">4.1</span> Access Modifiers / Design
+Around It</h2>
+<p>By far the most common approach is to structure an application such
+that it’s harder to accidentally leak this kind of information. Access
+modifiers can allow only the database module to access database
+credentials and DB session info. This, naturally, limits the space for
+accidental disclosures of those credentials to the database module as
+well. Wrong code certainly looks “more wrong” during review, but a
+revision that logs credentials still builds, still passes test cases,
+etc. This especially breaks down when dealing with credentials passed
+via environment variable. Once read via <code
+class="sourceCode go">os<span class="op">.</span>Getenv</code>,
+sensitive environment variables are still just loggable strings.</p>
+<h2 data-number="4.2" id="custom-serialization"><span
+class="header-section-number">4.2</span> Custom Serialization</h2>
+<p>A similar option is to control how structures are serialized. Go’s
+<code>MarshalJSON</code> function can be implemented for any struct
+that’s serialized with <code>encoding/json</code>, allowing developers
+to exclude fields that shouldn’t be logged. Ditto adding
+<code>toJSON()</code> for a JavaScript class, implementing the
+<code>ToString</code> and <code>Debug</code> traits in Rust, etc.
+Logger-specific functions, like <code>MarshalZerologObject</code> from
+Go’s <code>github.com/rs/zerolog</code>, allow fields to be excluded
+with specific logging libraries as well. And for more general
+data-dumping purposes, the <code>fmt.Formatter</code> and
+<code>fmt.GoStringer</code> interfaces can interface can be implemented
+on a struct for additional control. These unfortunately must be
+implemented manually for each type containing sensitive data, and they
+have no influence over non-logging contexts.</p>
+<p>Combined, implementing <code>MarshalJSON</code>,
+<code>MarshalZerologObject</code>, <code>Format</code>,
+<code>ToString</code>, and <code>GoStringer</code> (or their equivalents
+in other languages) cover most cases. Go’s
+<code>fmt.Sprintf("%s", some.StructField)</code> remains vulnerable
+however, and the resulting string can be freely logged, written to
+files, combined with other values, etc. Developers must manually know
+not to call that. We’ve shrunk the vulnerable surface, but it’s still
+possible to leak data.</p>
+<h2 data-number="4.3" id="domain-types-custom-wrappers"><span
+class="header-section-number">4.3</span> Domain Types &amp; Custom
+Wrappers</h2>
+<p>Following access modifiers and custom serialization is the approach
+of building domain-specific types. In our <code>UserLogin</code> example
+above, we’d replace <code>pwHash: string</code> with
+<code>pwHash: PasswordHash</code> — that is, we’d use a type that wraps
+a <code>string</code> serializes to a static string (or nothing):</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> PasswordHash {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> <span class="kw">readonly</span> hash<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">constructor</span>(hash<span class="op">:</span> <span class="dt">string</span>) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">hash</span> <span class="op">=</span> hash<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">toJSON</span>()<span class="op">:</span> <span class="dt">string</span> {</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">&quot;[redacted]&quot;</span><span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>This combines both the benefits and limitations of its source
+techniques though, so it’s vulnerable to the same issues.</p>
+<h2 data-number="4.4" id="haskells-io-monad"><span
+class="header-section-number">4.4</span> Haskell’s <code>IO</code>
+Monad</h2>
+<p>Having read about Haskell’s <code>IO</code> Monad for the first time
+just a few days ago, I’m quite clearly an expert when it comes to its
+limitations. As such an monadic sage — with <em>minutes</em> of research
+and zero experience — I can confidently say:</p>
+<blockquote>
+<p>The <code>IO</code> Monad appears to be solving a different yet
+mildly related problem and probably wouldn’t make an impact. I think.
+Probably.</p>
+</blockquote>
+<p>An <code>IO String</code> in Haskell is needed to solve compile-time
+and lazy-evaluation constraints with externally-provided bits of text,
+but doesn’t limit what actions can be taken with such a value once it’s
+been obtained. <code>IO String</code>s can still be printed, logged,
+sent in network requests, etc.</p>
+<p>There may be another related technique from Haskell and its
+relatives, but I haven’t found it yet. Do let me know if you find one
+:)</p>
+<h2 data-number="4.5" id="linting-via-denylist"><span
+class="header-section-number">4.5</span> Linting via Denylist</h2>
+<p>A naive linter can pretty easily detect calls to
+<code>fmt.Print*</code> (and its wrappers) that reference variables and
+fields of known name, e.g.:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;Auth token: %q&quot;</span><span class="op">,</span> sess<span class="op">.</span>AuthToken<span class="op">)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">//                           ~~~~~~~~~~~~~~</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Lint error: cannot print field named &quot;AuthToken&quot;</span></span></code></pre></div>
+<p>This is quite easy to accidentally bypass. If that auth token is used
+for Bearer authentication, it’s reasonable to prefix it with
+<code>"Bearer "</code> early:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>bt <span class="op">:=</span> <span class="st">&quot;Bearer &quot;</span> <span class="op">+</span> sess<span class="op">.</span>AuthToken</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;Auth token: %q&quot;</span><span class="op">,</span> bt<span class="op">)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">//                           ~~</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">// No error. &quot;bt&quot; isn&#39;t in the denylist, and string concatenation</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">// hides the presence of sess.AuthToken.</span></span></code></pre></div>
+<p>Besides the list of names being unbounded and easily gamed, a
+denylist linter is unlikely to be effective beyond a trivial program.
+And once folks are used to relying on it to catch this case, bypassing
+the denylist becomes trivial. In other words, a “the linter didn’t catch
+this, it’s probably fine” mentality.</p>
+<h2 data-number="4.6" id="linting-via-taint-tracking"><span
+class="header-section-number">4.6</span> Linting via Taint Tracking</h2>
+<p><a href="https://en.wikipedia.org/wiki/Taint_checking">Taint
+tracking</a> is not a new concept in programming and often comes up when
+I ask about this topic. Bugs for Perl’s <a
+href="https://perldoc.perl.org/perlsec">perlsec</a> pod date back to <a
+href="https://rt-archive.perl.org/perl5/Ticket/Display.html?id=4240">at
+least September 2000</a>, Ruby had a taint-tracking mechanism <a
+href="https://bugs.ruby-lang.org/issues/16131">until version 2.7</a>,
+and some Googlers released the experimental (and unfortunately
+seemingly-defunct) <a
+href="https://github.com/google/go-flow-levee">go-flow-levee</a>. This
+seems to be the closest I’ve found to process-aware types, but it’s
+unfortunately not flexible enough for our “don’t log sensitive values”
+use-case.</p>
+<p>Taint tracking tools — whether provided by default in a language or
+in external libraries/binaries — are all security-focused. They deal in
+the domain of trusted and untrusted values, and strive to prevent the
+use of externally-provided values in privileged ways. Attacks like SQL
+Injection, poison-pilled requests, and missing input validation are all
+well within-scope for a taint tracker. None of the available tools
+prevent the exposure of values before or after sanitization, possibly
+because printing or writing to files are considered low-risk. In fact
+many values we’d like to avoid exposing have known and trusted sources.
+For example, hashed passwords in our databases or customer fraud risk
+scores are inherently trustworthy but should absolutely not be logged
+anywhere. Taint tracking as it exists today is largely unable to help.
+Where they’re flexible enough to be helpful (e.g. Semgrep’s <a
+href="https://semgrep.dev/docs/writing-rules/data-flow/taint-mode/#sinks">pattern-based
+taint tracking</a>), they tend to be complicated to set up, easy to
+ignore (due to being run in a separate build pass), or difficult to tune
+as desired.</p>
+<h1 data-number="5"
+id="proposed-the-inproc-and-xproc-type-modifiers"><span
+class="header-section-number">5</span> Proposed: the <code>inproc</code>
+and <code>xproc</code> type modifiers</h1>
+<p>On a POSIX system, there’s surprisingly few ways to leak data outside
+the bounds of a process:</p>
+<ol type="1">
+<li>Write to a file descriptor (unix domain socket, named pipe, raw
+file, <code>stdout</code>/<code>stderr</code>, etc.)</li>
+<li>Write to a network socket (e.g. the result of
+<code>connect</code>)</li>
+<li>Write to a memory-mapped file descriptor (via <code>mmap</code>;
+overlaps with 1, but looks like raw memory manipulation)</li>
+<li>Write to a shared memory region (via <code>shmat</code> or
+similar)</li>
+</ol>
+<p>At any higher level beyond C(ish), developers typically see:</p>
+<ol type="1">
+<li>Mechanisms for writing to output streams</li>
+<li>Wrappers around that mechanism</li>
+</ol>
+<p>Go has <code>io.Writer</code>, <code>node</code> has
+<code>fs.WriteStream</code> and <code>net.Stream</code>, etc. that cover
+almost everything.</p>
+<p>What if we could limit Go’s <code>fmt.Printf</code> to only values we
+know <em>at compile time</em> are safe to write to <code>stdout</code>?
+How would we approach <code>MarshalJSON</code>, given that it produces
+new values (a byte slice) based on existing ones?</p>
+<p>Let’s consider a pair of new type modifiers, <code>inproc</code> and
+<code>xproc</code>, and feel out the impacts they’d have.</p>
+<dl>
+<dt><code>inproc[T]</code></dt>
+<dd>
+A value of type <code>T</code> that should not be allowed to cross
+process boundaries without manual intervention.
+</dd>
+<dd>
+Values with this type should only be used <strong>in-proc</strong>ess.
+</dd>
+<dt><code>xproc[T]</code></dt>
+<dd>
+A value of type <code>T</code> that can cross process boundaries with no
+additional effort.
+</dd>
+<dd>
+Values with this type are not limited to a single process.
+</dd>
+</dl>
+<p>For now, we’ll model these as Go generics. As will become clear
+below, these don’t qualify as proper Go generics and have some special
+compile-time properties. The syntax is convenient for demonstration
+purposes though.</p>
+<h2 data-number="5.1" id="variance-t-inproct-and-xproct"><span
+class="header-section-number">5.1</span> Variance: <code>T</code>,
+<code>inproc[T]</code>, and <code>xproc[T]</code></h2>
+<p>The proposed <code>inproc</code> and <code>xproc</code> container
+types are generic, with no notable additional contraints. They can be
+thought of as cost-free containers (costs consisdered below) or simply
+tagged subtypes of <code>T</code>.</p>
+<p>They do however have unique variance rules, to ensure an
+<code>inproc[T]</code> can’t easily be smuggled out via a regular
+<code>T</code>. To ensure backwards-compatibility with existing Go code,
+<code>T</code> is equivalent to <code>xproc[T]</code>. I do appreciate
+the clarity that an explicit <code>xproc[T]</code> provides, so it
+remains in this proposal.</p>
+<h3 data-number="5.1.1" id="binary-expressions"><span
+class="header-section-number">5.1.1</span> Binary Expressions</h3>
+<p>Binary expressions between <code>T</code>, <code>inproc[T]</code>,
+and <code>xproc[T]</code> should be allowed as a convenience for
+developers, but the result must preserve the most specific and
+restrictive of the two types.</p>
+<p>Consider the type of <code>c</code> for the statement
+<code>c := a + b</code>, given certain types for <code>a</code> and
+<code>b</code>:</p>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inproc[T]</code></td>
+<td><code>inproc[T]</code></td>
+<td><code>inproc[T]</code></td>
+</tr>
+<tr>
+<td><code>inproc[T]</code></td>
+<td><code>T</code></td>
+<td><code>inproc[T]</code></td>
+</tr>
+<tr>
+<td><code>inproc[T]</code></td>
+<td><code>xproc[T]</code></td>
+<td><code>inproc[T]</code></td>
+</tr>
+<tr>
+<td><code>xproc[T]</code></td>
+<td><code>T[T]</code></td>
+<td><code>xproc[T]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Similar to <a href="#linting-via-taint-tracking">taint tracking</a>
+above, the <code>inproc</code> container type “poisons” the result of
+any binary expression its involved it. The validity of
+<code>inproc[T] + inproc[U]</code> (that is, the addition of two
+different types wrapped in <code>inproc</code>) is unchanged here. If
+they were <code>+</code>able before, they still are; if they weren’t
+before, they still aren’t.</p>
+<p>Since <code>inproc[T]</code> is more specific than
+<code>xproc[T]</code>, binary expressions have covariant arguments of
+type <code>T</code>. The same applies for <code>xproc[T]</code> and bare
+<code>T</code>.</p>
+<h3 data-number="5.1.2" id="assignments"><span
+class="header-section-number">5.1.2</span> Assignments</h3>
+<p>Basically the same rules apply to assignments. For example,
+<code>x = y</code> for various declarations of <code>x</code> and types
+of <code>y</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Declaration</th>
+<th>Type of <code>y</code></th>
+<th><code>x = y</code> Allowed?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>var x inproc[T]</code></td>
+<td><code>inproc[T]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>var x inproc[T]</code></td>
+<td><code>xproc[T]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>var x inproc[T]</code></td>
+<td><code>T</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>var x xproc[T]</code></td>
+<td><code>inproc[T]</code></td>
+<td>No - leaks <code>y</code></td>
+</tr>
+<tr>
+<td><code>var x xproc[T]</code></td>
+<td><code>xproc[T]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>var x xproc[T]</code></td>
+<td><code>T</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>var x T</code></td>
+<td><code>inproc[T]</code></td>
+<td>No - leaks <code>y</code></td>
+</tr>
+<tr>
+<td><code>var x T</code></td>
+<td><code>xproc[T]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>var x T</code></td>
+<td><code>T</code></td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="5.1.3" id="function-arguments"><span
+class="header-section-number">5.1.3</span> Function Arguments</h3>
+<p>And the same for function arguments. For various signatures of a
+function <code>f</code> and the types of input parameters passed to it,
+we get roughly the same table. For simplicity, the placeholder type
+<code>T</code> is reified to <code>string</code> in this example.</p>
+<table>
+<thead>
+<tr>
+<th>Signature</th>
+<th>Type of <code>b</code></th>
+<th><code>f(b)</code> Allowed?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>func f(a inproc[string])</code></td>
+<td><code>inproc[string]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>func f(a inproc[string])</code></td>
+<td><code>xproc[string]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>func f(a inproc[string])</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>func f(a xproc[string])</code></td>
+<td><code>inproc[string]</code></td>
+<td>No - <code>f</code> can leak <code>b</code></td>
+</tr>
+<tr>
+<td><code>func f(a xproc[string])</code></td>
+<td><code>xproc[string]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>func f(a xproc[string])</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>func f(a string)</code></td>
+<td><code>inproc[string]</code></td>
+<td>No - <code>f</code> can leak <code>b</code></td>
+</tr>
+<tr>
+<td><code>func f(a string)</code></td>
+<td><code>xproc[string]</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>func f(a string)</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>Already, the power of this pattern is beginning to show through.
+Function <code>f</code> can declare that it <em>won’t</em> cause an
+argument to leak outside the current process. This is spiritually
+similar to using an argument of type <code>const char* a</code> in C to
+declare that the <code>char</code> array pointed to by <code>a</code>
+won’t be modified.</p>
+<h3 data-number="5.1.4" id="returned-values"><span
+class="header-section-number">5.1.4</span> Returned Values</h3>
+<p>Likely unsurprising, we see these same rules in a function’s return
+type. A function that claims it returns <code>inproc[string]</code> can
+<code>return x</code> where <code>x</code> has the type
+<code>xproc[string]</code>, but not the inverse. The truth table here is
+left as an exercise to the reader.</p>
+<div class="right">
+<aside>
+I’ve always wanted to say that.
+</aside>
+</div>
+<h3 data-number="5.1.5" id="container-types-structs"><span
+class="header-section-number">5.1.5</span> Container Types
+(Structs)</h3>
+<p>There’s nothing special about structs in this arrangement. Structs
+can be marked <code>inproc</code> or <code>xproc</code> separately from
+their fields.</p>
+<h3 data-number="5.1.6" id="collection-types-slices-maps"><span
+class="header-section-number">5.1.6</span> Collection Types (Slices
+&amp; Maps)</h3>
+<p>So far, these are all pretty trivial rules. Where taint tracking
+tends to get complicated is when collection types are introduced.
+Without careful static analysis, a <code>map[string]string</code> could
+be used to “juggle” a sensitive value and erase its taint marker.</p>
+<p>Go already rejects slices of heterogeneous types without an interface
+wrapping them. It follows then that
+<code>[](inproc[string] | xproc[string])</code> would also be invalid.
+To optimize for developer simplicity — and in the interests of
+side-stepping a Known Hard Problem — this restriction should likely be
+maintained outside of Go. There’s few cases where sensitive and
+non-sensitive values of the same type should be colocated in a single
+slice or map. Cases that do so are already at risk of accidental
+disclosure, but are unchanged from a backwards-compatibility
+perspective.</p>
+<p>There’s one notable restriction applied to the <code>inproc</code>
+and <code>xproc</code> containers: <strong>collection types cannot
+themselves be marked <code>inproc</code> or
+<code>xproc</code></strong>.</p>
+<h4 data-number="5.1.6.1" id="why-no-inprocxproc-collections"><span
+class="header-section-number">5.1.6.1</span> Why No
+<code>inproc</code>/<code>xproc</code> Collections</h4>
+<p>This seems initially restrictive, but the motivation is minimizing
+confusion and false-negatives. There are, in-effect, two ways to handle
+<code>inproc[[]T]</code> and <code>xproc[[]T]</code>:</p>
+<ol type="1">
+<li><p>The <code>inproc</code> modifier <em>propagates to its
+children</em>. An <code>inproc</code> slice implicitly contains
+<code>inproc</code> elements. For example, <code>inproc[[]T]</code> is
+implicitly <code>inproc[[]inproc[T]]</code>. An explicit
+<code>inproc[[]xproc[T]]</code> (an <code>inproc</code> slice of
+<code>xproc</code> elements) would also be valid.</p>
+<ul>
+<li>Advantages:
+<ul>
+<li>Less Typing</li>
+<li>More likely what a developer wants</li>
+</ul></li>
+<li>Disadvantages:
+<ul>
+<li>Controlling visibility separately is very verbose</li>
+<li>This behavior isn’t terribly intuitable</li>
+</ul></li>
+</ul></li>
+<li><p>The <code>inproc</code> modifier <em>never propagates to its
+children</em>. In this approach, <code>inproc[[]T]</code> from the
+previous example is explicitly an <code>inproc</code> slice of bare
+<code>T</code> elements. This forces developers to read and write
+<code>inproc[[]inproc[T]]</code> to represent an <code>inproc</code>
+slice of <code>inproc</code> values. That’s difficult to parse visually,
+so broken down:</p>
+<pre><code>          inproc[T]   - the element type
+        []inproc[T]   - a slice of the element type
+inproc[ []inproc[T] ] - an inproc slice of the element type</code></pre>
+<ul>
+<li>Advantages
+<ul>
+<li>No magic behavior</li>
+<li>Provides complete control over visibility</li>
+</ul></li>
+<li>Disadvantages
+<ul>
+<li>Awful to read and write</li>
+<li>Often redundant</li>
+</ul></li>
+</ul></li>
+</ol>
+<p>In practice, <strong>a collection type itself isn’t
+sensitive</strong>. The length of a slice is rarely sensitive without
+also having the contents. Since <code>[]inproc[T]</code>
+(e.g. <code>[]inproc[byte]</code> for a slice of inproc bytes) already
+covers the contents of such a slice, wrapping the collection provides
+near-zero value. Disallowing <code>inproc</code> on collections is a bit
+of an arbitrary decision, but it does serve to simplify things
+significantly.</p>
+<div class="aside">
+<aside>
+<p>Password logins are a difficult counter-example. Exposing a
+password’s byte length is still a significant disclosure, and this
+restriction would allow <code>len(pw_bytes)</code> (where
+<code>pw_bytes</code> is of type <code>[]byte</code>) to escape the
+process boundary via logging, etc.</p>
+Since Go’s slices must have homogeneous types, there’s perhaps a
+workaround possible at the compiler level. If <code>len(x)</code> is
+called where <code>x</code> is a collection of an <code>inproc</code>
+type, perhaps it returns an <code>inproc[int]</code>?
+</aside>
+</div>
+<h2 data-number="5.2" id="explicit-conversions"><span
+class="header-section-number">5.2</span> Explicit Conversions</h2>
+<p>It must still be possible to convert from an <code>inproc[T]</code>
+to an <code>xproc[T]</code>. A generated auth token needs to be shown to
+users once for it to be useful, and a customer’s shipping address must
+be displayed on invoices. It’s recommended that these both be
+<code>inproc[T]</code> values to prevent accidental logging, but these
+at some level <em>do</em> need to be serialized and sent over the
+wire.</p>
+<p>Like Go’s <code>len</code> or <code>new</code>, a new global function
+<code>larry()</code> is included here as well.</p>
+<div class="aside">
+<aside>
+<p>I genuinely haven’t found a good name for this function yet. It
+almost certainly won’t be accepted as-is, but it’d be Very Funny if it
+does. To avoid bikeshedding over the name for now, I’m calling it
+“Larry” in honor of my neighborhood cat who recently passed away.</p>
+Miss you, buddy. &lt;/3
+</aside>
+</div>
+<p>This function returns whatever it’s provided. It’s a no-op,
+implemented roughly as:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> larry<span class="op">[</span>V <span class="dt">any</span><span class="op">](</span>sensitive inproc<span class="op">[</span>V<span class="op">])</span> xproc<span class="op">[</span>V<span class="op">]</span> <span class="op">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dt">any</span><span class="op">(</span>sensitive<span class="op">)</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>This provides the necessary escape-hatch to allow sensitive values to
+be intentionally exposed for inclusion in user-facing function calls.
+(Assume <code>fmt.Printf</code> has been modified to accept only
+<code>xproc[T]</code> values).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> UserSession <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  Username xproc<span class="op">[</span><span class="dt">string</span><span class="op">]</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  pwHash inproc<span class="op">[</span><span class="dt">string</span><span class="op">]</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  expires time<span class="op">.</span>Time</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">// ...</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;Session created: %q/%q&quot;</span><span class="op">,</span> sess<span class="op">.</span>Username<span class="op">,</span> sess<span class="op">.</span>pwHash<span class="op">)</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">//                                                  ~~~~~~~~~~~</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Compile error: &#39;inproc[string]&#39; is not assignable to &#39;xproc[string]&#39;.</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">// To print this value, use larry().</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">// Debugging incident 717</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;Session created: %q/%q&quot;</span><span class="op">,</span> sess<span class="op">.</span>Username<span class="op">,</span> larry<span class="op">(</span>sess<span class="op">.</span>pwHash<span class="op">))</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">//                                                  ~~~~~~~~~~~~~~~~~~</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co">// No compile error.</span></span></code></pre></div>
+<p>This helps to highlight where sensitive values are intentionally
+being exposed, and <a
+href="https://www.joelonsoftware.com/2005/05/11/making-wrong-code-look-wrong/">makes
+wrong code look wrong</a>.</p>
+<h2 data-number="5.3" id="runtime-cost"><span
+class="header-section-number">5.3</span> Runtime Cost</h2>
+<p>Remember, <code>inproc[T]</code> and <code>xproc[T]</code> are not
+actually generic containers, even though they’re typed like generics. To
+avoid unnecessary allocations or pointer dereferences, these container
+types are <em>erased</em> during Go’s <a
+href="https://github.com/golang/go/blob/2bffb8b3fb2d9137ccfa87fc35137371b86a2e96/src/cmd/compile/README.md#3-ir-construction-noding">IR
+construction (“noding”) phase</a>. This is the first possible point
+after type checking, and ensures no changes are needed to the Go IR or
+any emit phases.</p>
+<p>Similarly, the <code>larry</code> function above also gets completely
+optimized away at compile-time.</p>
+<p>The result is a nearly zero-cost data privacy setup.</p>
+<h2 data-number="5.4" id="json-marshalling"><span
+class="header-section-number">5.4</span> JSON Marshalling</h2>
+<p>Go’s <code>encoding/json.Marshal</code> function would need some
+small modifications to ensure that <code>inproc[T]</code> values can be
+marshalled properly. The critical behavior change is that
+<code>Marshal(v inproc[any])</code> must produce a slice of inproc bytes
+(<code>[]inproc[byte]</code>), to ensure JSON marshalling can’t sneak
+past these restrictions.</p>
+<p>The default implementation of <code>encoding/json.Marshal</code>
+would continue to require reflection. There is some runtime cost to
+checking field tags, but this is in-line with the current implementation
+of <code>encoding/json</code>.</p>
+<p>Unfortunately, the erasure of <code>inproc[T]</code> and
+<code>xproc[T]</code> at compile-time render the <code>reflect</code>
+package unable to determine the <code>inproc</code>ness of struct fields
+automatically. Struct tags <em>are</em> accessible via the
+<code>reflect</code> package, so this may be solveable via a matching
+<code>json</code> struct tag. This would require extra work for
+third-party serializers to integrate, as well a compile-time check
+guaranteeing that the struct tag and type agree on
+<code>inproc</code>-ness.</p>
+<div class="right">
+<aside>
+I don’t have a great solution here. Suggestions welcome!
+</aside>
+</div>
+<h1 data-number="6" id="example-use"><span
+class="header-section-number">6</span> Example Use</h1>
+<p>By putting this all together into a reasonably realistic(ish)
+example, we can get a better sense of what it feels like to build
+something with <code>inproc</code> available.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">// InvoiceBuilder provides a builder pattern for serialized,</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co">// externally-facing invoices.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> InvoiceBuilder <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    destAddr <span class="dt">string</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    memo <span class="dt">string</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">// WithDestAddr adds the provided destination address to the invoice.</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> <span class="op">(</span>ib <span class="op">*</span>InvoiceBuilder<span class="op">)</span> WithDestAddr<span class="op">(</span>a <span class="op">*</span>Address<span class="op">)</span> <span class="op">*</span>InvoiceBuilder <span class="op">{</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> a <span class="op">==</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> ib</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    ib<span class="op">.</span>destAddr <span class="op">=</span> <span class="st">&quot;Ships to:</span><span class="ch">\n</span><span class="st">&quot;</span> <span class="op">+</span> a<span class="op">.</span>String<span class="op">()</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ib</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> <span class="op">(</span>ib <span class="op">*</span>InvoiceBuilder<span class="op">)</span> WithMemo<span class="op">(</span>m <span class="dt">string</span><span class="op">)</span> <span class="op">*</span>InvoiceBuilder <span class="op">{</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> m <span class="op">==</span> <span class="ot">nil</span> <span class="op">||</span> m <span class="op">==</span> <span class="st">&quot;&quot;</span> <span class="op">{</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ib</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">// -----</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> AddressBook <span class="kw">interface</span> <span class="op">{</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Lookup retrieves an address from the database by its ID.</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    Lookup<span class="op">(</span>id inproc<span class="op">[</span><span class="dt">string</span><span class="op">])</span> inproc<span class="op">[</span>Address<span class="op">];</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Order <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    isPhysical <span class="dt">bool</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    destAddrId inproc<span class="op">[</span><span class="dt">string</span><span class="op">]</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    customerMemo <span class="dt">string</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The ID of the corresponding transaction in Stripe.</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    stripeTxId inproc<span class="op">[</span><span class="dt">string</span><span class="op">]</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">// GetInvoice builds a plain-text representation of a purchase</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">// invoice for the provided order, looking up additional order</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">// metadata as needed.</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> GetInvoice<span class="op">(</span>ctx context<span class="op">.</span>Contextx<span class="op">,</span> order <span class="op">*</span>Order<span class="op">)</span> <span class="dt">string</span> <span class="op">{</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    span <span class="op">:=</span> tracing<span class="op">.</span>Span<span class="op">(</span>ctx<span class="op">,</span> <span class="st">&quot;GetInvoice&quot;</span><span class="op">)</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>        Str<span class="op">(</span><span class="st">&quot;orderID&quot;</span><span class="op">,</span> order<span class="op">.</span>id<span class="op">).</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>        Str<span class="op">(</span><span class="st">&quot;stripeTxId&quot;</span><span class="op">,</span> larry<span class="op">(</span>order<span class="op">.</span>stripeTxId<span class="op">))</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="co">//                        ~~~~~</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="co">//      ① Converts inproc[string] to xproc[string], and allows</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="co">//      the Stripe transaction ID to be included in a span&#39;s</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="co">//      metadata. We know it&#39;s safe to send to our controlled</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="co">//      tracing infrastructure, but it shouldn&#39;t ever be sent</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="co">//      to users.</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">defer</span> span<span class="op">.</span>End<span class="op">()</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>    ib <span class="op">:=</span> <span class="bu">new</span><span class="op">(</span>InvoiceBuilder<span class="op">).</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>        WithNumber<span class="op">(</span>order<span class="op">.</span>seqNum<span class="op">).</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>        WithMemo<span class="op">(</span>order<span class="op">.</span>stripeTxId<span class="op">)</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a><span class="co">//               ~~~~~~~~~~~~~~~~</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="co">// ② Compile error: &#39;inproc[string]&#39; is not assignable to &#39;string&#39;.</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="co">//</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="co">// Without inproc support, this would accidentally include the</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="co">// Stripe transaction ID instead of the customer&#39;s order memo.</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* ... */</span></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>order<span class="op">.</span>isPhysical <span class="op">&amp;&amp;</span> order<span class="op">.</span>destAddrId<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> dst<span class="op">,</span> err <span class="op">:=</span> addrBook<span class="op">.</span>Lookup<span class="op">(</span>destAddrId<span class="op">);</span> err <span class="op">!=</span> <span class="ot">nil</span> <span class="op">{</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>            ib<span class="op">.</span>WithDestAddr<span class="op">(</span>larry<span class="op">(</span>dst<span class="op">))</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a><span class="co">//                          ~~~~~</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="co">//          ③ Converts inproc[Address] to xproc[Address], and </span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a><span class="co">//          allows the destination address to be passed to</span></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a><span class="co">//          InvoiceBuilder.WithDestAddr</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ib<span class="op">.</span>String<span class="op">()</span></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>This is of course a contrived example, but there’s three locations
+worth calling out:</p>
+<ul>
+<li>At ① and ③, we see that it’s quite easy to expose sensitive
+information when desired. The explicit call to <code>larry</code> makes
+the intention clear, and requires no runtime overhead.</li>
+<li>At ②, we’ve been stopped from accidentally misusing an
+<code>inproc</code> value in a cross-process context. The compile-time
+error is a lightweight prompt to the author: should that variable be
+exposed?</li>
+</ul>
+<h1 data-number="7" id="next-steps"><span
+class="header-section-number">7</span> Next Steps</h1>
+<p>Goodness I sure wish I had a highly-motivating closing section! To
+reiterate, this is somewhere between a thought experiment and an actual
+proposal.</p>
+<p>I’d love to hear your thoughts — consider this a pre-RFC request for
+comments. Perhaps I’m over-indexing on the risks, and this just isn’t
+that big of a deal. Maybe I’ve overlooked something major that makes
+this approach a non-starter. Am I a big dumdum? (Generally, yeah). Am I
+a big dumdum <em>who should have realized this is already built into
+<code>$popular_language</code></em>?</p>
+<h2 data-number="7.1" id="contact"><span
+class="header-section-number">7.1</span> Contact</h2>
+<p>Feel free to get in touch by:</p>
+<ul>
+<li>Emailing <a href="mailto:inproc@barag.org">inproc@barag.org</a></li>
+<li>Commenting on Hacker News/lobste.rs/wherever else you may have found
+this post</li>
+<li>DMing me at <a href="https://hachyderm.io/@sjbarag"/><span
+class="citation" data-cites="sjbarag">@sjbarag</span><span
+class="citation" data-cites="hachyderm.io">@hachyderm.io</span></a></li>
+<li>Shouting really loud out your window (I might not hear it)</li>
+</ul>
+</body>
+</html>
